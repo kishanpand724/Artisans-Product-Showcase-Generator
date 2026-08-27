@@ -12,7 +12,8 @@ import {
   Feather,
   Crown,
   Compass,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -23,6 +24,7 @@ interface StyleSelectorProps {
   extraInstructions: string;
   onChangeExtraInstructions: (text: string) => void;
   onGenerateShowcase: () => void;
+  isGenerating?: boolean;
 }
 
 export const StyleSelector: React.FC<StyleSelectorProps> = ({
@@ -32,6 +34,7 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({
   extraInstructions,
   onChangeExtraInstructions,
   onGenerateShowcase,
+  isGenerating = false,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -220,14 +223,28 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({
           </div>
 
           <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={!isGenerating ? { scale: 1.01 } : {}}
+            whileTap={!isGenerating ? { scale: 0.98 } : {}}
             onClick={onGenerateShowcase}
-            className="w-full sm:w-auto px-10 py-5 rounded-full bg-[#1A1A1A] text-white hover:bg-black font-bold text-[11px] uppercase tracking-[0.25em] shadow-lg shadow-black/10 transition-all flex items-center justify-center gap-3 cursor-pointer"
+            disabled={isGenerating}
+            className={`w-full sm:w-auto px-10 py-5 rounded-full font-bold text-[11px] uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 ${
+              isGenerating
+                ? 'bg-gray-400 text-white cursor-not-allowed opacity-80'
+                : 'bg-[#1A1A1A] text-white hover:bg-black shadow-lg shadow-black/10 cursor-pointer'
+            }`}
           >
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>Generate Showcase</span>
-            <ArrowRight className="w-4 h-4" />
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-4 h-4 text-white animate-spin" />
+                <span>Generating Showcase...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>Generate Showcase</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </motion.button>
         </div>
 

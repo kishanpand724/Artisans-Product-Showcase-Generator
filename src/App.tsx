@@ -8,13 +8,20 @@ import { StyleSelector } from './components/StyleSelector';
 import { ShowcasePreviewModal } from './components/ShowcasePreviewModal';
 import { Footer } from './components/Footer';
 import { generateStructuredPrompt } from './utils/promptGenerator';
+import { urlToBase64 } from './utils/imageUtils';
 
 export default function App() {
   const [images, setImages] = useState<ProductImage[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<ShowcaseStyle>('Minimal');
   const [extraInstructions, setExtraInstructions] = useState<string>('');
   const [showStyleSection, setShowStyleSection] = useState<boolean>(false);
+  
+  // Generation state
   const [isShowcaseOpen, setIsShowcaseOpen] = useState<boolean>(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [progressStep, setProgressStep] = useState<string>('');
 
   // If image count drops below 2, hide the style selection phase
   useEffect(() => {
@@ -22,6 +29,12 @@ export default function App() {
       setShowStyleSection(false);
     }
   }, [images.length, showStyleSection]);
+
+  // Reset generated image if images or style change drastically
+  useEffect(() => {
+    setGeneratedImageUrl(null);
+    setGenerationError(null);
+  }, [images.length, selectedStyle, extraInstructions]);
 
   // Default angles helper based on current count
   const getDefaultAngle = (index: number): AngleType => {
@@ -118,6 +131,9 @@ export default function App() {
     setShowStyleSection(false);
     setSelectedStyle('Minimal');
     setExtraInstructions('');
+    setGeneratedImageUrl(null);
+    setGenerationError(null);
+    setIsShowcaseOpen(false);
   };
 
   const handleContinueToStyle = () => {
@@ -131,6 +147,57 @@ export default function App() {
   };
 
   const generatedPrompt = generateStructuredPrompt(selectedStyle, extraInstructions, images);
+
+  const handleStartShowcaseGeneration = async () => {
+    if (images.length < 2) return;
+    setIsShowcaseOpen(true);
+    setIsGenerating(true);
+    setGenerationError(null);
+    setProgressStep(`Preparing ${images.length} reference product photos...`);
+
+    try {
+      const imagePayloads = await Promise.all(
+        images.map(async (img) => {
+          const base64Obj = await urlToBase64(img.url);
+          return {
+            data: base64Obj.data,
+            mimeType: base64Obj.mimeType,
+            angle: img.angle,
+          };
+        })
+      );
+
+      setProgressStep(`Staging ${selectedStyle} visual preset & prompt directives...`);
+      await new Promise((r) => setTimeout(r, 400));
+
+      setProgressStep('Generating single showcase image via Gemini AI...');
+
+      const response = await fetch('/api/generate-showcase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: generatedPrompt,
+          images: imagePayloads,
+          style: selectedStyle,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to generate product showcase image.');
+      }
+
+      setGeneratedImageUrl(data.imageUrl);
+    } catch (err: any) {
+      console.error('Showcase generation error:', err);
+      setGenerationError(err?.message || 'An unexpected error occurred during showcase generation.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#2C2825] flex flex-col justify-between selection:bg-[#E2D4C3] selection:text-[#1F1B18]">
@@ -159,7 +226,7 @@ export default function App() {
           onGenerateShowcase={handleContinueToStyle}
         />
 
-        {/* Phase 3: Style Selection & Prompt Generation Section */}
+        {/* Phase 3 & Phase 4: Style Selection & Prompt Generation Section */}
         {showStyleSection && images.length >= 2 && (
           <StyleSelector
             images={images}
@@ -167,7 +234,8 @@ export default function App() {
             onSelectStyle={setSelectedStyle}
             extraInstructions={extraInstructions}
             onChangeExtraInstructions={setExtraInstructions}
-            onGenerateShowcase={() => setIsShowcaseOpen(true)}
+            onGenerateShowcase={handleStartShowcaseGeneration}
+            isGenerating={isGenerating}
           />
         )}
       </main>
@@ -182,6 +250,11 @@ export default function App() {
           selectedStyle={selectedStyle}
           extraInstructions={extraInstructions}
           generatedPrompt={generatedPrompt}
+          isGenerating={isGenerating}
+          generatedImageUrl={generatedImageUrl}
+          generationError={generationError}
+          progressStep={progressStep}
+          onRetry={handleStartShowcaseGeneration}
           onClose={() => setIsShowcaseOpen(false)}
         />
       )}

@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
-import { ProductImage, AngleType, PresetProduct } from './types';
+import React, { useState, useEffect } from 'react';
+import { ProductImage, AngleType, PresetProduct, ShowcaseStyle } from './types';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ImageUploader } from './components/ImageUploader';
 import { GenerateAction } from './components/GenerateAction';
+import { StyleSelector } from './components/StyleSelector';
 import { ShowcasePreviewModal } from './components/ShowcasePreviewModal';
 import { Footer } from './components/Footer';
+import { generateStructuredPrompt } from './utils/promptGenerator';
 
 export default function App() {
   const [images, setImages] = useState<ProductImage[]>([]);
+  const [selectedStyle, setSelectedStyle] = useState<ShowcaseStyle>('Minimal');
+  const [extraInstructions, setExtraInstructions] = useState<string>('');
+  const [showStyleSection, setShowStyleSection] = useState<boolean>(false);
   const [isShowcaseOpen, setIsShowcaseOpen] = useState<boolean>(false);
+
+  // If image count drops below 2, hide the style selection phase
+  useEffect(() => {
+    if (images.length < 2 && showStyleSection) {
+      setShowStyleSection(false);
+    }
+  }, [images.length, showStyleSection]);
 
   // Default angles helper based on current count
   const getDefaultAngle = (index: number): AngleType => {
@@ -93,6 +105,7 @@ export default function App() {
       uploadedAt: new Date(),
     }));
     setImages(presetImages);
+    setShowStyleSection(true);
   };
 
   const handleReset = () => {
@@ -102,7 +115,22 @@ export default function App() {
       }
     });
     setImages([]);
+    setShowStyleSection(false);
+    setSelectedStyle('Minimal');
+    setExtraInstructions('');
   };
+
+  const handleContinueToStyle = () => {
+    setShowStyleSection(true);
+    setTimeout(() => {
+      const el = document.getElementById('style-selection');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  const generatedPrompt = generateStructuredPrompt(selectedStyle, extraInstructions, images);
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#2C2825] flex flex-col justify-between selection:bg-[#E2D4C3] selection:text-[#1F1B18]">
@@ -115,7 +143,7 @@ export default function App() {
         {/* Hero Section */}
         <Hero />
 
-        {/* Upload Product Images Section */}
+        {/* Phase 2: Upload Product Images Section */}
         <ImageUploader
           images={images}
           onAddImages={handleAddImages}
@@ -125,20 +153,35 @@ export default function App() {
           onLoadPreset={handleLoadPreset}
         />
 
-        {/* Generate Showcase Button Action Section */}
+        {/* Action Section: Continue to Style Selection */}
         <GenerateAction
           imageCount={images.length}
-          onGenerateShowcase={() => setIsShowcaseOpen(true)}
+          onGenerateShowcase={handleContinueToStyle}
         />
+
+        {/* Phase 3: Style Selection & Prompt Generation Section */}
+        {showStyleSection && images.length >= 2 && (
+          <StyleSelector
+            images={images}
+            selectedStyle={selectedStyle}
+            onSelectStyle={setSelectedStyle}
+            extraInstructions={extraInstructions}
+            onChangeExtraInstructions={setExtraInstructions}
+            onGenerateShowcase={() => setIsShowcaseOpen(true)}
+          />
+        )}
       </main>
 
       {/* Footer */}
       <Footer />
 
-      {/* Showcase Modal triggered by active Generate Showcase button */}
+      {/* Showcase Modal triggered by "Generate Showcase" button */}
       {isShowcaseOpen && (
         <ShowcasePreviewModal
           images={images}
+          selectedStyle={selectedStyle}
+          extraInstructions={extraInstructions}
+          generatedPrompt={generatedPrompt}
           onClose={() => setIsShowcaseOpen(false)}
         />
       )}

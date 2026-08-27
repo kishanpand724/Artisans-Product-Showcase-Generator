@@ -1,5 +1,19 @@
 export type AngleType = 'Front' | 'Side' | 'Back' | 'Detail' | 'Top' | 'Angle View';
 
+export type ShowcaseStyle = 'Minimal' | 'Premium' | 'Traditional';
+
+export interface StyleOption {
+  id: ShowcaseStyle;
+  title: string;
+  tagline: string;
+  description: string;
+  background: string;
+  lighting: string;
+  composition: string;
+  colorBadge: string;
+  bgGradient: string;
+}
+
 export interface ProductImage {
   id: string;
   url: string;
@@ -22,3 +36,4 @@ export interface PresetProduct {
     angle: AngleType;
   }[];
 }
+

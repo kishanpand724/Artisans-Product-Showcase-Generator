@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { ProductImage } from '../types';
-import { Sparkles, X, Sun, Layers, ShieldCheck, CheckCircle2, RotateCw, ZoomIn, SlidersHorizontal } from 'lucide-react';
+import { ProductImage, ShowcaseStyle } from '../types';
+import { Sparkles, X, CheckCircle2, Copy, Check, SlidersHorizontal, MessageSquareText, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ShowcasePreviewModalProps {
   images: ProductImage[];
+  selectedStyle: ShowcaseStyle;
+  extraInstructions: string;
+  generatedPrompt: string;
   onClose: () => void;
 }
 
@@ -12,29 +15,38 @@ type LightingPreset = 'Warm Studio' | 'Gallery Exhibition' | 'Natural Sunlight';
 
 export const ShowcasePreviewModal: React.FC<ShowcasePreviewModalProps> = ({
   images,
+  selectedStyle,
+  extraInstructions,
+  generatedPrompt,
   onClose,
 }) => {
   const [activeAngleIndex, setActiveAngleIndex] = useState(0);
   const [lighting, setLighting] = useState<LightingPreset>('Warm Studio');
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const activeImage = images[activeAngleIndex] || images[0];
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(generatedPrompt);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const getLightingStyle = () => {
     switch (lighting) {
       case 'Gallery Exhibition':
-        return 'bg-gradient-to-b from-[#1F1B18] via-[#2A2420] to-[#12100E] text-[#FAF8F5]';
+        return 'bg-gradient-to-b from-[#1A1A1A] via-[#262422] to-[#121212] text-white';
       case 'Natural Sunlight':
-        return 'bg-gradient-to-br from-[#FFFBF7] via-[#FAF5EE] to-[#F5EBE0] text-[#2C2825]';
+        return 'bg-gradient-to-br from-[#FFFBF7] via-[#FAF5EE] to-[#F5EBE0] text-[#1A1A1A]';
       case 'Warm Studio':
       default:
-        return 'bg-gradient-to-br from-[#2D2621] via-[#3B322B] to-[#211B17] text-[#FAF8F5]';
+        return 'bg-gradient-to-br from-[#2D2825] via-[#38312C] to-[#1F1B18] text-white';
     }
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 bg-[#1A1A1A]/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+      <div className="fixed inset-0 z-50 bg-[#1A1A1A]/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -49,10 +61,10 @@ export const ShowcasePreviewModal: React.FC<ShowcasePreviewModalProps> = ({
               </div>
               <div>
                 <h3 className="font-serif text-lg sm:text-xl font-light text-[#1A1A1A]">
-                  Artisan Multi-Angle Showcase
+                  Artisan Showcase Engine
                 </h3>
                 <p className="text-[11px] text-[#1A1A1A]/50 font-medium">
-                  Composition of {images.length} verified product angles
+                  Phase 3 Verification: Style & Prompt Generation Ready
                 </p>
               </div>
             </div>
@@ -60,37 +72,37 @@ export const ShowcasePreviewModal: React.FC<ShowcasePreviewModalProps> = ({
             <button
               onClick={onClose}
               className="w-9 h-9 rounded-full bg-black/5 hover:bg-black/10 text-[#1A1A1A] flex items-center justify-center transition-colors cursor-pointer"
-              title="Close showcase"
+              title="Close modal"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Phase Notice Banner */}
+          {/* Phase 3 Banner */}
           <div className="bg-emerald-50 border-b border-emerald-200/60 px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-emerald-900">
             <div className="flex items-center gap-2 font-medium">
               <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
               <span>
-                <strong>Frontend Phase Verified:</strong> Multi-angle upload state, remove logic, and button activation validated with {images.length} images.
+                <strong>Phase 3 Complete:</strong> {selectedStyle} style selected with {images.length} reference photos and structured prompt generated.
               </span>
             </div>
             <span className="font-bold uppercase tracking-widest text-[9px] bg-emerald-800 text-white px-2.5 py-1 rounded-full self-start sm:self-auto">
-              Ready for AI Integration
+              Ready for Phase 4 API Hook
             </span>
           </div>
 
-          {/* Main Showcase Stage */}
+          {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             
-            {/* Left Stage Viewer */}
-            <div className={`lg:col-span-8 p-6 sm:p-10 transition-colors duration-500 flex flex-col justify-between min-h-[420px] ${getLightingStyle()}`}>
+            {/* Left Column: Image Angles Staging */}
+            <div className={`lg:col-span-7 p-6 sm:p-8 transition-colors duration-500 flex flex-col justify-between ${getLightingStyle()}`}>
               
-              {/* Lighting controls bar */}
+              {/* Controls bar */}
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-1.5 text-xs font-semibold opacity-90">
+                <span className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-80 flex items-center gap-1.5">
                   <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span className="text-[11px] uppercase tracking-wider">Studio Mood:</span>
-                </div>
+                  Product Reference Angles ({images.length})
+                </span>
 
                 <div className="flex items-center gap-1 bg-black/30 p-1 rounded-full backdrop-blur-xs text-xs font-medium">
                   {(['Warm Studio', 'Gallery Exhibition', 'Natural Sunlight'] as LightingPreset[]).map((mode) => (
@@ -109,36 +121,26 @@ export const ShowcasePreviewModal: React.FC<ShowcasePreviewModalProps> = ({
                 </div>
               </div>
 
-              {/* Main Product Angle Display */}
+              {/* Active Image */}
               <div className="relative flex-1 flex items-center justify-center py-6">
-                <div 
-                  className={`relative max-w-full transition-transform duration-300 ${
-                    isZoomed ? 'scale-125 cursor-zoom-out' : 'scale-100 cursor-zoom-in'
-                  }`}
-                  onClick={() => setIsZoomed(!isZoomed)}
-                >
+                <div className="relative max-w-full">
                   <img
                     src={activeImage.url}
                     alt={activeImage.name}
-                    className="max-h-[340px] w-auto object-contain rounded-2xl shadow-2xl border border-white/10"
+                    className="max-h-[280px] w-auto object-contain rounded-2xl shadow-2xl border border-white/10"
                   />
-                  
-                  {/* Angle Badge */}
                   <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-bold">
-                    {activeImage.angle} View (#{activeAngleIndex + 1})
+                    {activeImage.angle} Perspective
                   </div>
                 </div>
               </div>
 
-              {/* Angle Selector Thumbnails */}
+              {/* Thumbnails */}
               <div className="pt-4 border-t border-white/10 flex items-center justify-center gap-3">
                 {images.map((img, index) => (
                   <button
                     key={img.id}
-                    onClick={() => {
-                      setActiveAngleIndex(index);
-                      setIsZoomed(false);
-                    }}
+                    onClick={() => setActiveAngleIndex(index)}
                     className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                       activeAngleIndex === index
                         ? 'border-white ring-2 ring-white/50 scale-105'
@@ -148,9 +150,9 @@ export const ShowcasePreviewModal: React.FC<ShowcasePreviewModalProps> = ({
                     <img
                       src={img.url}
                       alt={img.name}
-                      className="w-14 h-14 object-cover"
+                      className="w-12 h-12 object-cover"
                     />
-                    <span className="absolute bottom-0 inset-x-0 bg-black/80 text-[9px] uppercase tracking-wider text-white text-center font-bold truncate px-1 py-0.5">
+                    <span className="absolute bottom-0 inset-x-0 bg-black/80 text-[8px] uppercase tracking-wider text-white text-center font-bold truncate px-1">
                       {img.angle}
                     </span>
                   </button>
@@ -159,77 +161,80 @@ export const ShowcasePreviewModal: React.FC<ShowcasePreviewModalProps> = ({
 
             </div>
 
-            {/* Right Information Panel */}
-            <div className="lg:col-span-4 p-6 sm:p-8 bg-white flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-black/5">
+            {/* Right Column: Style & Prompt Generation Summary */}
+            <div className="lg:col-span-5 p-6 sm:p-8 bg-white flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-black/5 space-y-6">
               
-              <div className="space-y-6">
+              <div className="space-y-5">
+                
+                {/* Style Badge */}
                 <div>
-                  <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#1A1A1A]/40">
-                    Multi-Angle Composition
+                  <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#1A1A1A]/40 block mb-1">
+                    Selected Style
                   </span>
-                  <h4 className="font-serif text-2xl font-light text-[#1A1A1A] mt-1">
-                    Handcrafted Masterpiece
-                  </h4>
-                  <p className="text-xs text-[#1A1A1A]/50 mt-1 leading-relaxed">
-                    Uploaded product perspectives are synced for 3D model reconstruction & studio renders.
-                  </p>
-                </div>
-
-                {/* Perspective Breakdown list */}
-                <div className="space-y-3">
-                  <h5 className="text-[10px] font-bold text-[#1A1A1A]/50 uppercase tracking-[0.2em]">
-                    Uploaded Perspectives ({images.length})
-                  </h5>
-                  <div className="space-y-2">
-                    {images.map((img, idx) => (
-                      <div
-                        key={img.id}
-                        onClick={() => setActiveAngleIndex(idx)}
-                        className={`p-3 rounded-2xl border text-xs flex items-center justify-between transition-all cursor-pointer ${
-                          activeAngleIndex === idx
-                            ? 'bg-[#F5F2ED] border-black text-[#1A1A1A] font-semibold'
-                            : 'bg-white border-black/5 text-[#1A1A1A]/70 hover:border-black/30'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-black/5 text-[#1A1A1A] font-bold text-[10px] flex items-center justify-center">
-                            {idx + 1}
-                          </span>
-                          <span>{img.angle} Perspective</span>
-                        </div>
-                        <span className="text-[11px] text-[#1A1A1A]/50 font-normal truncate max-w-[100px]">
-                          {img.name}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A1A1A] text-white font-serif text-sm">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <span>{selectedStyle} Preset</span>
                   </div>
                 </div>
 
-                {/* Product Metadata Info */}
+                {/* Extra Instructions Preview */}
+                {extraInstructions.trim().length > 0 && (
+                  <div className="p-3 rounded-2xl bg-[#F5F2ED] border border-black/5 space-y-1">
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-[#1A1A1A]/50 flex items-center gap-1">
+                      <MessageSquareText className="w-3 h-3 text-[#1A1A1A]" />
+                      Extra Instructions Included
+                    </span>
+                    <p className="text-xs text-[#1A1A1A] italic">
+                      "{extraInstructions.trim()}"
+                    </p>
+                  </div>
+                )}
+
+                {/* Structured Prompt Box */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#1A1A1A]/50 uppercase tracking-[0.2em]">
+                      Structured AI Prompt
+                    </span>
+                    <button
+                      onClick={handleCopy}
+                      className="text-[10px] uppercase tracking-wider font-bold text-[#1A1A1A] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      {copied ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                      <span>{copied ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#1A1A1A] text-gray-200 font-mono text-[10px] leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap select-all">
+                    {generatedPrompt}
+                  </div>
+                </div>
+
+                {/* Status List */}
                 <div className="p-4 rounded-2xl bg-[#FBF9F6] border border-black/5 text-xs space-y-2 text-[#1A1A1A]/70">
                   <div className="flex justify-between">
-                    <span className="text-[#1A1A1A]/40 font-medium">Angles Count:</span>
-                    <span className="font-bold text-[#1A1A1A]">{images.length} / 3</span>
+                    <span className="text-[#1A1A1A]/40 font-medium">Reference Images:</span>
+                    <span className="font-bold text-[#1A1A1A]">{images.length} Angles</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#1A1A1A]/40 font-medium">Requirement Status:</span>
-                    <span className="font-bold text-emerald-800">Passed (Min. 2)</span>
+                    <span className="text-[#1A1A1A]/40 font-medium">Product Identity Guard:</span>
+                    <span className="font-bold text-emerald-800">Active</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#1A1A1A]/40 font-medium">Showcase Mode:</span>
-                    <span className="font-bold text-[#1A1A1A]">{lighting}</span>
+                    <span className="text-[#1A1A1A]/40 font-medium">AI API Integration:</span>
+                    <span className="font-bold text-amber-800">Pending (Phase 4)</span>
                   </div>
                 </div>
 
               </div>
 
-              {/* Bottom Close Action */}
-              <div className="pt-6 border-t border-black/5 mt-6">
+              {/* Close Button */}
+              <div className="pt-4 border-t border-black/5">
                 <button
                   onClick={onClose}
                   className="w-full py-4 rounded-full bg-[#1A1A1A] text-white font-bold text-xs uppercase tracking-[0.2em] hover:bg-black transition-colors cursor-pointer"
                 >
-                  Return to Upload Studio
+                  Return to Studio
                 </button>
               </div>
 

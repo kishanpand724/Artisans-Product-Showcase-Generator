@@ -1,0 +1,6 @@
+{
+  "name": "Artisan Showcase AI",
+  "description": "A premium showcase builder for artisans to upload product images from multiple angles and preview showcase generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

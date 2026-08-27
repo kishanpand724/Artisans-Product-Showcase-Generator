@@ -42,6 +42,32 @@ export default function App() {
     setImages((prev) => [...prev, ...newItems].slice(0, 3));
   };
 
+  const handleReplaceImage = (id: string, file: File) => {
+    setImages((prev) => {
+      const existingIndex = prev.findIndex((img) => img.id === id);
+      if (existingIndex === -1) return prev;
+
+      const oldImg = prev[existingIndex];
+      if (oldImg.url.startsWith('blob:')) {
+        URL.revokeObjectURL(oldImg.url);
+      }
+
+      const updatedItem: ProductImage = {
+        id: `img-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        url: URL.createObjectURL(file),
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        angle: oldImg.angle,
+        uploadedAt: new Date(),
+      };
+
+      const newImages = [...prev];
+      newImages[existingIndex] = updatedItem;
+      return newImages;
+    });
+  };
+
   const handleRemoveImage = (id: string) => {
     setImages((prev) => {
       const itemToRemove = prev.find((img) => img.id === id);
@@ -93,6 +119,7 @@ export default function App() {
         <ImageUploader
           images={images}
           onAddImages={handleAddImages}
+          onReplaceImage={handleReplaceImage}
           onRemoveImage={handleRemoveImage}
           onUpdateAngle={handleUpdateAngle}
           onLoadPreset={handleLoadPreset}

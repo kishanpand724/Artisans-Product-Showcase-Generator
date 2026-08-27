@@ -63,15 +63,15 @@ export const GenerateAction: React.FC<GenerateActionProps> = ({
               {isEnabled ? (
                 <>
                   <Sparkles className="w-4 h-4 text-white animate-pulse" />
-                  <span>Generate Showcase</span>
+                  <span>Continue to Showcase</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               ) : (
                 <>
                   <Lock className="w-3.5 h-3.5 text-gray-400" />
-                  <span>Generate Showcase</span>
+                  <span>Continue</span>
                   <span className="text-[9px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">
-                    {imageCount}/2
+                    {imageCount}/2 Min
                   </span>
                 </>
               )}

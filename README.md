@@ -84,6 +84,3 @@ Open the local URL shown in the terminal to view the project.
 
 B.Tech CSE (AIML) Student
 
-## 📄 License
-
-This project is created for educational and development purposes.

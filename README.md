@@ -1,5 +1,4 @@
 # Artisans 🎨
-
 A modern frontend web application designed to showcase and promote local artisans, their handmade products, and traditional craftsmanship.
 
 ## 📌 About the Project
